@@ -1,36 +1,44 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# AI Knowledge Workspace
 
-## Getting Started
+A Next.js frontend for asking questions against your documents. Chat requests go through this app’s server route, and the Dify API key stays on the server.
 
-First, run the development server:
+## Getting started
 
 ```bash
+npm install
+copy .env.example .env.local
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+Open [http://localhost:3000](http://localhost:3000).
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+Set `DIFY_API_BASE_URL` and `DIFY_API_KEY` in `.env.local`. Next.js loads environment files from the project root, not from `src/`.
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+## Project structure
 
-## Learn More
+```text
+ai-knowledge-workspace/
+├── public/
+│   ├── images/
+│   └── icons/
+├── src/
+│   ├── app/                  Next.js pages and server routes
+│   │   ├── page.tsx
+│   │   ├── layout.tsx
+│   │   ├── documents/page.tsx
+│   │   ├── chat/[id]/page.tsx
+│   │   └── api/chat/route.ts Secure forwarder to Dify
+│   ├── components/           Reusable UI
+│   ├── features/             Feature-specific logic
+│   ├── hooks/
+│   ├── lib/
+│   │   ├── api-client.ts     Browser client for /api/chat
+│   │   ├── dify.ts           Server-side Dify integration
+│   │   └── utils.ts
+│   ├── types/
+│   └── styles/
+├── tests/
+└── .env.example
+```
 
-To learn more about Next.js, take a look at the following resources:
-
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
-
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
-
-## Deploy on Vercel
-
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+`components/` is reusable interface. `features/` is behavior for documents, conversations, and citations. `lib/dify.ts` is imported only by the server. The browser uses `lib/api-client.ts`, which calls `/api/chat`.
