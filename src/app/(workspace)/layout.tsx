@@ -9,7 +9,7 @@ export default function WorkspaceLayout({
 }) {
   return (
     <WorkspaceProvider>
-      <Suspense fallback={<div className="min-h-screen bg-background" />}>
+      <Suspense fallback={<div className="h-full bg-background" />}>
         <AppShell>{children}</AppShell>
       </Suspense>
     </WorkspaceProvider>

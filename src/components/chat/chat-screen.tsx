@@ -122,7 +122,7 @@ export function ChatScreen({
   const missing = id !== "new" && !conversation;
 
   return (
-    <div className="flex h-full min-h-0">
+    <div className="flex h-full min-h-0 flex-1">
       <DocumentPicker
         className="hidden lg:flex"
         documents={documents}

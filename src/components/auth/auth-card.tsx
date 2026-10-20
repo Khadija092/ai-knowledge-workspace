@@ -33,7 +33,7 @@ export function AuthCard({ mode }: { mode: "login" | "signup" }) {
   }
 
   return (
-    <main className="flex min-h-screen items-center justify-center px-4 py-10">
+    <main className="flex h-full items-center justify-center overflow-y-auto px-4 py-10">
       <div className="w-full max-w-md rounded-xl border border-border bg-card p-8">
         <div className="flex items-center gap-3">
           <span className="flex size-9 items-center justify-center rounded-lg bg-primary text-white">
