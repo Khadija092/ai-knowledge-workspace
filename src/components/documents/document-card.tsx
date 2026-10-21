@@ -7,10 +7,10 @@ import type { Document } from "@/types/document";
 
 export function DocumentCard({ document }: { document: Document }) {
   return (
-    <article className="flex flex-col rounded-xl border border-border bg-card p-4">
+    <article className="flex flex-col rounded-2xl border border-border bg-card p-4 shadow-card transition-shadow hover:shadow-md">
       <Link href={`/documents/${document.id}`} className="flex flex-1 flex-col gap-4">
-        <div className="flex h-28 items-center justify-center rounded-lg bg-background">
-          <span className="flex size-12 items-center justify-center rounded-xl bg-selected text-primary">
+        <div className="flex h-28 items-center justify-center rounded-xl bg-gradient-to-br from-selected to-background">
+          <span className="flex size-12 items-center justify-center rounded-2xl bg-card text-primary shadow-sm">
             <FileText className="size-5" aria-hidden />
           </span>
         </div>

@@ -22,7 +22,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
       {menuOpen ? (
         <button
           type="button"
-          className="fixed inset-0 z-30 bg-[#171923]/40 md:hidden"
+          className="fixed inset-0 z-30 bg-[#101218]/50 backdrop-blur-[2px] md:hidden"
           aria-label="Close navigation"
           onClick={() => setMenuPath(null)}
         />
@@ -49,7 +49,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
         {toasts.map((toast) => (
           <div
             key={toast.id}
-            className="pointer-events-auto flex items-start justify-between gap-3 rounded-xl border border-border bg-card px-4 py-3 text-sm shadow-md"
+            className="pointer-events-auto flex items-start justify-between gap-3 rounded-2xl border border-border bg-card px-4 py-3 text-sm shadow-card"
           >
             <p className={toast.tone === "error" ? "text-destructive" : "text-foreground"}>
               {toast.message}

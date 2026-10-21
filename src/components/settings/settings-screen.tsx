@@ -19,7 +19,7 @@ export function SettingsScreen() {
           title="Settings"
           description="Manage your account and workspace preferences."
         />
-        <div className="h-64 animate-pulse rounded-xl border border-border bg-card" />
+        <div className="h-64 animate-pulse rounded-2xl border border-border bg-card shadow-card" />
       </div>
     );
   }
@@ -67,7 +67,7 @@ function SettingsForm() {
             </button>
           ))}
         </nav>
-        <section className="rounded-xl border border-border bg-card p-6">
+        <section className="rounded-2xl border border-border bg-card p-6 shadow-card">
           {category === "General" ? (
             <div className="flex max-w-xl flex-col gap-6">
               <h2 className="text-xl font-semibold">General settings</h2>

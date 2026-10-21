@@ -32,7 +32,7 @@ export function ChatComposer({
 
   return (
     <form
-      className="border-t border-border bg-card p-4"
+      className="border-t border-border bg-card/80 p-4 backdrop-blur-md"
       onSubmit={(event) => {
         event.preventDefault();
         if (!disabled) {
@@ -41,7 +41,7 @@ export function ChatComposer({
       }}
     >
       <p className="mb-2 text-[13px] text-secondary">{helper}</p>
-      <div className="rounded-xl border border-border bg-card p-3 focus-within:border-primary focus-within:ring-2 focus-within:ring-primary/20">
+      <div className="rounded-2xl border border-border bg-background p-3 shadow-sm focus-within:border-primary focus-within:bg-card focus-within:ring-2 focus-within:ring-primary/20">
         <label className="sr-only" htmlFor="chat-composer">
           Ask a question about your documents
         </label>

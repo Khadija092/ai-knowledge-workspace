@@ -54,7 +54,7 @@ export function HistoryScreen() {
     <div className="flex flex-col gap-8">
       <PageHeader title="Chat History" description="Continue where you left off." />
       {loading ? (
-        <div className="h-40 animate-pulse rounded-xl border border-border bg-card" />
+        <div className="h-40 animate-pulse rounded-2xl border border-border bg-card shadow-card" />
       ) : conversations.length === 0 ? (
         <EmptyState
           icon={<MessageCircle className="size-5" />}
@@ -114,7 +114,7 @@ export function HistoryScreen() {
                         return (
                           <li
                             key={conversation.id}
-                            className="flex items-center gap-3 rounded-xl border border-border bg-card px-4 py-4"
+                            className="flex items-center gap-3 rounded-2xl border border-border bg-card px-4 py-4 shadow-card"
                           >
                             <Link href={`/chat/${conversation.id}`} className="min-w-0 flex-1">
                               <span className="flex items-start justify-between gap-4">

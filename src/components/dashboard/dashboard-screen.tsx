@@ -62,7 +62,7 @@ export function DashboardScreen() {
       {loading ? (
         <div className="grid grid-cols-1 gap-5 md:grid-cols-2 xl:grid-cols-3">
           {Array.from({ length: 3 }).map((_, index) => (
-            <div key={index} className="h-28 animate-pulse rounded-xl border border-border bg-card" />
+            <div key={index} className="h-28 animate-pulse rounded-2xl border border-border bg-card shadow-card" />
           ))}
         </div>
       ) : (
@@ -75,7 +75,7 @@ export function DashboardScreen() {
           <section className="flex flex-col gap-4">
             <SectionHeading href="/documents" label="Recent documents" />
             {recentDocuments.length === 0 ? (
-              <p className="rounded-xl border border-dashed border-border bg-card px-5 py-8 text-sm text-secondary">
+              <p className="rounded-2xl border border-dashed border-border bg-card px-5 py-8 text-sm text-secondary shadow-card">
                 No documents yet.
               </p>
             ) : (
@@ -88,7 +88,7 @@ export function DashboardScreen() {
           </section>
           <section className="flex flex-col gap-4">
             <SectionHeading href="/history" label="Recent conversations" />
-            <div className="overflow-hidden rounded-xl border border-border bg-card">
+            <div className="overflow-hidden rounded-2xl border border-border bg-card shadow-card">
               {recentConversations.length === 0 ? (
                 <p className="px-5 py-8 text-sm text-secondary">No conversations yet.</p>
               ) : (
@@ -115,7 +115,7 @@ export function DashboardScreen() {
               )}
             </div>
           </section>
-          <section className="rounded-xl border border-border bg-card p-5 md:p-6">
+          <section className="rounded-2xl border border-primary/15 bg-gradient-to-br from-card to-selected p-5 shadow-card md:p-6">
             {ready.length === 0 ? (
               <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
                 <div>
@@ -143,7 +143,7 @@ export function DashboardScreen() {
                     value={question}
                     onChange={(event) => setQuestion(event.target.value)}
                     placeholder="Ask your first question..."
-                    className="h-11 flex-1 rounded-lg border border-border bg-card px-3 text-sm outline-none focus:border-primary focus:ring-2 focus:ring-primary/20"
+                    className="h-11 flex-1 rounded-xl border border-border bg-card px-3 text-sm outline-none focus:border-primary focus:ring-2 focus:ring-primary/20"
                   />
                   <Button type="submit" disabled={question.trim().length === 0}>
                     Send
@@ -168,9 +168,11 @@ function StatCard({
   value: string;
 }) {
   return (
-    <article className="rounded-xl border border-border bg-card p-5">
+    <article className="rounded-2xl border border-border bg-card p-5 shadow-card">
       <div className="flex items-center gap-2 text-secondary">
-        {icon}
+        <span className="flex size-8 items-center justify-center rounded-xl bg-selected text-primary">
+          {icon}
+        </span>
         <h2 className="text-[13px] font-medium">{label}</h2>
       </div>
       <p className="mt-4 text-[28px] leading-9 font-semibold tracking-tight">{value}</p>

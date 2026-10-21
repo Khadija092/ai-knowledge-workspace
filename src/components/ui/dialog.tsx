@@ -57,7 +57,7 @@ export function Dialog({
     <div className="fixed inset-0 z-50 flex items-end justify-center p-0 sm:items-center sm:p-6">
       <button
         type="button"
-        className="absolute inset-0 bg-[#171923]/40"
+        className="absolute inset-0 bg-[#101218]/45 backdrop-blur-[2px]"
         aria-label="Close dialog"
         onClick={onClose}
       />
@@ -69,7 +69,7 @@ export function Dialog({
         aria-describedby={description ? descriptionId : undefined}
         tabIndex={-1}
         className={cn(
-          "relative z-10 max-h-[92vh] w-full overflow-y-auto rounded-t-2xl border border-border bg-card p-6 shadow-lg outline-none sm:max-w-lg sm:rounded-xl",
+          "relative z-10 max-h-[92vh] w-full overflow-y-auto rounded-t-3xl border border-border bg-card p-6 shadow-card outline-none sm:max-w-lg sm:rounded-2xl",
           className,
         )}
       >

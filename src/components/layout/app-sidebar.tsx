@@ -43,21 +43,21 @@ export function AppSidebar({
   return (
     <aside
       className={cn(
-        "fixed inset-y-0 left-0 z-40 flex h-full w-[248px] shrink-0 flex-col overflow-hidden border-r border-border bg-sidebar transition-transform md:static md:z-auto md:w-[72px] md:translate-x-0 lg:w-[248px]",
+        "fixed inset-y-0 left-0 z-40 flex h-full w-[248px] shrink-0 flex-col overflow-hidden border-r border-white/10 bg-sidebar text-white transition-transform md:static md:z-auto md:w-[72px] md:translate-x-0 lg:w-[248px]",
         mobileOpen ? "translate-x-0" : "-translate-x-full",
       )}
     >
       <div className="flex h-16 items-center gap-3 px-6 md:justify-center md:px-3 lg:justify-start lg:px-6">
-        <span className="flex size-8 items-center justify-center rounded-lg bg-primary text-white">
+        <span className="flex size-8 items-center justify-center rounded-xl bg-primary text-white shadow-sm shadow-primary/40">
           <Sparkles className="size-4" aria-hidden />
         </span>
-        <span className="font-semibold md:hidden lg:inline">Knowledge AI</span>
+        <span className="font-semibold tracking-tight md:hidden lg:inline">Knowledge AI</span>
       </div>
       <div className="px-4 md:px-3 lg:px-4">
         <Link
           href={newChatHref}
           onClick={onNavigate}
-          className="inline-flex h-10 w-full items-center justify-center gap-2 rounded-lg bg-primary text-sm font-medium text-white hover:bg-primary-hover md:px-0 lg:justify-center"
+          className="inline-flex h-10 w-full items-center justify-center gap-2 rounded-xl bg-primary text-sm font-medium text-white shadow-sm shadow-primary/30 hover:bg-primary-hover md:px-0 lg:justify-center"
         >
           <Plus className="size-4" aria-hidden />
           <span className="md:hidden lg:inline">New Chat</span>
@@ -65,7 +65,7 @@ export function AppSidebar({
       </div>
       <nav className="mt-6 flex flex-1 flex-col gap-6 overflow-y-auto px-3">
         <div>
-          <p className="px-3 pb-2 text-xs font-medium tracking-wide text-muted uppercase md:hidden lg:block">
+          <p className="px-3 pb-2 text-[11px] font-medium tracking-[0.14em] text-white/40 uppercase md:hidden lg:block">
             Workspace
           </p>
           <ul className="flex flex-col gap-1">
@@ -83,7 +83,7 @@ export function AppSidebar({
           </ul>
         </div>
         <div>
-          <p className="px-3 pb-2 text-xs font-medium tracking-wide text-muted uppercase md:hidden lg:block">
+          <p className="px-3 pb-2 text-[11px] font-medium tracking-[0.14em] text-white/40 uppercase md:hidden lg:block">
             Library
           </p>
           <NavLink
@@ -95,7 +95,7 @@ export function AppSidebar({
           />
         </div>
       </nav>
-      <div className="flex flex-col gap-1 border-t border-border p-3">
+      <div className="flex flex-col gap-1 border-t border-white/10 p-3">
         <NavLink
           href="/settings"
           label="Settings"
@@ -104,10 +104,10 @@ export function AppSidebar({
           onNavigate={onNavigate}
         />
         <div className="md:hidden lg:block">
-          <UserMenu onHelp={onHelp} />
+          <UserMenu onHelp={onHelp} tone="inverse" />
         </div>
         <div className="hidden md:block lg:hidden">
-          <UserMenu onHelp={onHelp} compact />
+          <UserMenu onHelp={onHelp} compact tone="inverse" />
         </div>
       </div>
     </aside>
@@ -134,8 +134,8 @@ function NavLink({
       aria-current={active ? "page" : undefined}
       onClick={onNavigate}
       className={cn(
-        "flex h-10 items-center gap-3 rounded-lg px-3 text-sm font-medium md:justify-center lg:justify-start",
-        active ? "bg-selected text-primary" : "text-[#374151] hover:bg-background",
+        "flex h-10 items-center gap-3 rounded-xl px-3 text-sm font-medium md:justify-center lg:justify-start",
+        active ? "bg-white/10 text-white" : "text-white/65 hover:bg-white/6 hover:text-white",
       )}
     >
       <Icon className="size-[18px] shrink-0" aria-hidden />

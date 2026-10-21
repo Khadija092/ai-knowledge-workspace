@@ -9,10 +9,12 @@ export function UserMenu({
   onHelp,
   compact = false,
   placement = "up",
+  tone = "default",
 }: {
   onHelp: () => void;
   compact?: boolean;
   placement?: "up" | "down";
+  tone?: "default" | "inverse";
 }) {
   const router = useRouter();
   const [open, setOpen] = useState(false);
@@ -46,7 +48,8 @@ export function UserMenu({
       <button
         type="button"
         className={cn(
-          "flex items-center gap-3 rounded-lg text-left hover:bg-background",
+          "flex items-center gap-3 rounded-xl text-left",
+          tone === "inverse" ? "hover:bg-white/8" : "hover:bg-background",
           compact ? "px-2 py-2" : "w-full px-2 py-2",
         )}
         aria-haspopup="menu"
@@ -59,10 +62,17 @@ export function UserMenu({
         </span>
         {compact ? null : (
           <span className="min-w-0">
-            <span className="block truncate text-sm font-medium text-foreground">
+            <span
+              className={cn(
+                "block truncate text-sm font-medium",
+                tone === "inverse" ? "text-white" : "text-foreground",
+              )}
+            >
               Khadija Hafeez
             </span>
-            <span className="block text-xs text-muted">Demo profile</span>
+            <span className={cn("block text-xs", tone === "inverse" ? "text-white/45" : "text-muted")}>
+              Demo profile
+            </span>
           </span>
         )}
       </button>
@@ -71,7 +81,7 @@ export function UserMenu({
           id={menuId}
           role="menu"
           className={cn(
-            "absolute z-30 w-60 rounded-xl border border-border bg-card p-1 shadow-md",
+            "absolute z-30 w-60 rounded-2xl border border-border bg-card p-1 shadow-card",
             placement === "down" ? "top-12 right-0" : "bottom-12 left-0",
           )}
         >

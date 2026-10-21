@@ -161,7 +161,7 @@ function DocumentsSkeleton() {
       {Array.from({ length: 3 }).map((_, index) => (
         <div
           key={index}
-          className="h-64 animate-pulse rounded-xl border border-border bg-card"
+          className="h-64 animate-pulse rounded-2xl border border-border bg-card shadow-card"
         />
       ))}
     </div>

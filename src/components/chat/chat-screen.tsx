@@ -188,7 +188,7 @@ export function ChatScreen({
                   <button
                     key={example}
                     type="button"
-                    className="rounded-xl border border-border bg-card px-4 py-3 text-left text-sm hover:border-primary hover:bg-selected"
+                    className="rounded-2xl border border-border bg-card px-4 py-3 text-left text-sm shadow-sm hover:border-primary hover:bg-selected"
                     onClick={() => setDraft(example)}
                   >
                     {example}

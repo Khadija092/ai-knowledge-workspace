@@ -25,7 +25,7 @@ export function AppHeader({
   const title = titles.find(([prefix]) => pathname.startsWith(prefix))?.[1] ?? "Overview";
 
   return (
-    <header className="flex h-16 shrink-0 items-center gap-3 border-b border-border bg-card px-4 md:px-6">
+    <header className="flex h-16 shrink-0 items-center gap-3 border-b border-border/80 bg-card/80 px-4 backdrop-blur-md md:px-6">
       <button
         type="button"
         className="inline-flex size-10 items-center justify-center rounded-lg text-foreground hover:bg-background md:hidden"

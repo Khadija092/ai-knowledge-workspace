@@ -1,20 +1,20 @@
 @import "tailwindcss";
 
 :root {
-  --background: #f8f9fc;
+  --background: #f3f4f8;
   --card: #ffffff;
-  --sidebar: #ffffff;
-  --primary: #6558f5;
-  --primary-hover: #5145d8;
-  --foreground: #171923;
-  --secondary: #6b7280;
-  --muted: #9ca3af;
-  --border: #e8eaf0;
-  --success: #16a34a;
-  --warning: #d97706;
-  --destructive: #dc2626;
-  --selected: #f0eeff;
-  --canvas: #eef0f5;
+  --sidebar: #101218;
+  --primary: #6e56f5;
+  --primary-hover: #5a45e6;
+  --foreground: #12141c;
+  --secondary: #5c6472;
+  --muted: #8b93a3;
+  --border: #e6e8f0;
+  --success: #0f9f6e;
+  --warning: #d4880f;
+  --destructive: #e11d48;
+  --selected: #f1efff;
+  --canvas: #e8ebf2;
 }
 
 @theme inline {
@@ -33,8 +33,9 @@
   --color-selected: var(--selected);
   --color-canvas: var(--canvas);
   --font-sans: var(--font-inter);
-  --radius-card: 12px;
-  --radius-control: 8px;
+  --radius-card: 16px;
+  --radius-control: 12px;
+  --shadow-card: 0 1px 2px rgb(16 18 24 / 0.04), 0 10px 28px rgb(16 18 24 / 0.05);
 }
 
 html,
@@ -44,7 +45,10 @@ body {
 }
 
 body {
-  background: var(--background);
+  background:
+    radial-gradient(900px 420px at 100% -10%, rgb(110 86 245 / 0.09), transparent 55%),
+    radial-gradient(700px 360px at -10% 0%, rgb(110 86 245 / 0.06), transparent 50%),
+    var(--background);
   color: var(--foreground);
   font-family: var(--font-sans), Inter, Arial, Helvetica, sans-serif;
   font-size: 14px;
@@ -59,5 +63,5 @@ select {
 }
 
 ::selection {
-  background: #d9d6ff;
+  background: #ddd8ff;
 }

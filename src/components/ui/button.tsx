@@ -4,10 +4,11 @@ type ButtonVariant = "primary" | "secondary" | "ghost" | "destructive";
 type ButtonSize = "md" | "sm" | "icon";
 
 const variants: Record<ButtonVariant, string> = {
-  primary: "bg-primary text-white hover:bg-primary-hover",
-  secondary: "border border-border bg-card text-foreground hover:bg-background",
+  primary:
+    "bg-primary text-white shadow-sm shadow-primary/25 hover:bg-primary-hover",
+  secondary: "border border-border bg-card text-foreground shadow-sm hover:bg-background",
   ghost: "text-secondary hover:bg-selected hover:text-foreground",
-  destructive: "bg-destructive text-white hover:bg-[#b91c1c]",
+  destructive: "bg-destructive text-white shadow-sm hover:bg-[#be123c]",
 };
 
 const sizes: Record<ButtonSize, string> = {
@@ -22,7 +23,7 @@ export function buttonClassName(
   className?: string,
 ) {
   return cn(
-    "inline-flex items-center justify-center gap-2 rounded-lg text-sm font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40 disabled:pointer-events-none disabled:opacity-50",
+    "inline-flex items-center justify-center gap-2 rounded-xl text-sm font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40 disabled:pointer-events-none disabled:opacity-50",
     variants[variant],
     sizes[size],
     className,

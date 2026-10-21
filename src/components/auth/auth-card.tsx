@@ -34,9 +34,9 @@ export function AuthCard({ mode }: { mode: "login" | "signup" }) {
 
   return (
     <main className="flex h-full items-center justify-center overflow-y-auto px-4 py-10">
-      <div className="w-full max-w-md rounded-xl border border-border bg-card p-8">
+      <div className="w-full max-w-md rounded-3xl border border-border bg-card p-8 shadow-card">
         <div className="flex items-center gap-3">
-          <span className="flex size-9 items-center justify-center rounded-lg bg-primary text-white">
+          <span className="flex size-9 items-center justify-center rounded-xl bg-primary text-white shadow-sm shadow-primary/30">
             <Sparkles className="size-4" aria-hidden />
           </span>
           <span className="font-semibold">Knowledge AI</span>

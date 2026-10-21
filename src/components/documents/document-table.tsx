@@ -8,7 +8,7 @@ import type { Document } from "@/types/document";
 export function DocumentTable({ documents }: { documents: Document[] }) {
   return (
     <>
-      <div className="overflow-hidden rounded-xl border border-border bg-card md:hidden">
+      <div className="overflow-hidden rounded-2xl border border-border bg-card shadow-card md:hidden">
         <ul className="divide-y divide-border">
           {documents.map((document) => (
             <li key={document.id} className="flex flex-col gap-3 p-4">
@@ -33,7 +33,7 @@ export function DocumentTable({ documents }: { documents: Document[] }) {
           ))}
         </ul>
       </div>
-      <div className="hidden overflow-hidden rounded-xl border border-border bg-card md:block">
+      <div className="hidden overflow-hidden rounded-2xl border border-border bg-card shadow-card md:block">
         <table className="w-full border-collapse text-left">
           <thead>
             <tr className="border-b border-border text-xs font-medium tracking-wide text-muted uppercase">
