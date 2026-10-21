@@ -32,65 +32,77 @@ export function AuthCard({ mode }: { mode: "login" | "signup" }) {
     router.push("/dashboard");
   }
 
+  function enterDemo() {
+    router.push("/dashboard");
+  }
+
   return (
-    <main className="flex h-full items-center justify-center overflow-y-auto px-4 py-10">
-      <div className="w-full max-w-md rounded-3xl border border-border bg-card p-8 shadow-card">
-        <div className="flex items-center gap-3">
-          <span className="flex size-9 items-center justify-center rounded-xl bg-primary text-white shadow-sm shadow-primary/30">
-            <Sparkles className="size-4" aria-hidden />
-          </span>
-          <span className="font-semibold">Knowledge AI</span>
-        </div>
-        <h1 className="mt-8 text-[28px] leading-9 font-semibold">
-          {mode === "login" ? "Welcome back" : "Create your workspace"}
-        </h1>
-        <p className="mt-2 text-sm text-secondary">
-          {mode === "login"
-            ? "Continue your research."
-            : "Start asking questions from your documents."}
-        </p>
-        <form className="mt-8 flex flex-col gap-4" onSubmit={submit}>
-          {mode === "signup" ? (
-            <label className="flex flex-col gap-2 text-sm font-medium">
-              Name
-              <Input value={name} onChange={(event) => setName(event.target.value)} />
-            </label>
-          ) : null}
-          <label className="flex flex-col gap-2 text-sm font-medium">
-            Email
-            <Input
-              type="email"
-              autoComplete="email"
-              value={email}
-              onChange={(event) => setEmail(event.target.value)}
-            />
-          </label>
-          <label className="flex flex-col gap-2 text-sm font-medium">
-            Password
-            <Input
-              type="password"
-              autoComplete={mode === "login" ? "current-password" : "new-password"}
-              value={password}
-              onChange={(event) => setPassword(event.target.value)}
-            />
-          </label>
-          {error ? <p className="text-sm text-destructive">{error}</p> : null}
-          <Button type="submit" className="mt-2 w-full">
-            {mode === "login" ? "Sign in" : "Create account"}
+    <main className="h-full overflow-y-auto overscroll-y-contain">
+      <div className="flex min-h-full items-center justify-center px-4 py-10">
+        <div className="w-full max-w-md rounded-3xl border border-border bg-card p-8 shadow-card">
+          <div className="flex items-center gap-3">
+            <span className="flex size-9 items-center justify-center rounded-xl bg-primary text-white shadow-sm shadow-primary/30">
+              <Sparkles className="size-4" aria-hidden />
+            </span>
+            <span className="font-semibold">Knowledge AI</span>
+          </div>
+          <h1 className="mt-8 text-[28px] leading-9 font-semibold">
+            {mode === "login" ? "Welcome back" : "Create your workspace"}
+          </h1>
+          <p className="mt-2 text-sm text-secondary">
+            Public demo. No account is created, and nothing you type is saved.
+          </p>
+          <Button type="button" className="mt-6 w-full" onClick={enterDemo}>
+            Enter demo account
           </Button>
-        </form>
-        <p className="mt-4 text-[13px] text-secondary">
-          Demo screen. Your password is not saved or sent anywhere.
-        </p>
-        <p className="mt-6 text-sm text-secondary">
-          {mode === "login" ? "Don't have an account?" : "Already have an account?"}{" "}
-          <Link
-            href={mode === "login" ? "/signup" : "/login"}
-            className="font-medium text-primary"
-          >
-            {mode === "login" ? "Create account" : "Sign in"}
-          </Link>
-        </p>
+          <div className="mt-6 flex items-center gap-3 text-xs text-muted">
+            <span className="h-px flex-1 bg-border" />
+            or try the form
+            <span className="h-px flex-1 bg-border" />
+          </div>
+          <form className="mt-6 flex flex-col gap-4" onSubmit={submit}>
+            {mode === "signup" ? (
+              <label className="flex flex-col gap-2 text-sm font-medium">
+                Name
+                <Input value={name} onChange={(event) => setName(event.target.value)} />
+              </label>
+            ) : null}
+            <label className="flex flex-col gap-2 text-sm font-medium">
+              Email
+              <Input
+                type="email"
+                autoComplete="email"
+                value={email}
+                onChange={(event) => setEmail(event.target.value)}
+              />
+            </label>
+            <label className="flex flex-col gap-2 text-sm font-medium">
+              Password
+              <Input
+                type="password"
+                autoComplete={mode === "login" ? "current-password" : "new-password"}
+                value={password}
+                onChange={(event) => setPassword(event.target.value)}
+              />
+            </label>
+            {error ? <p className="text-sm text-destructive">{error}</p> : null}
+            <p className="text-[13px] text-secondary">
+              Any email works. Use at least 8 characters for the password.
+            </p>
+            <Button type="submit" variant="secondary" className="w-full">
+              {mode === "login" ? "Sign in" : "Create account"}
+            </Button>
+          </form>
+          <p className="mt-6 text-sm text-secondary">
+            {mode === "login" ? "Don't have an account?" : "Already have an account?"}{" "}
+            <Link
+              href={mode === "login" ? "/signup" : "/login"}
+              className="font-medium text-primary"
+            >
+              {mode === "login" ? "Create account" : "Sign in"}
+            </Link>
+          </p>
+        </div>
       </div>
     </main>
   );

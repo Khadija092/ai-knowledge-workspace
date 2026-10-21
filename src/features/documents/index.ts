@@ -1,6 +1,9 @@
 import type { Document, DocumentStatus } from "@/types/document";
 
-export const MAX_UPLOAD_BYTES = 10 * 1024 * 1024;
+// Vercel serverless functions reject request bodies above their platform limit
+// before this application's API route can return a JSON error.
+export const MAX_UPLOAD_BYTES = 4 * 1024 * 1024;
+export const MAX_UPLOAD_LABEL = "4 MB";
 
 export function formatFileSize(bytes: number) {
   if (bytes < 1024 * 1024) {

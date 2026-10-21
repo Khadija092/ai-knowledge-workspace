@@ -79,7 +79,7 @@ export async function uploadDocuments(files: File[]) {
       throw new ApiError("Only PDF files can be uploaded.");
     }
     if (file.size > MAX_UPLOAD_BYTES) {
-      throw new ApiError("This file is larger than 10 MB.");
+      throw new ApiError("This file is larger than 4 MB, the maximum supported for uploads.");
     }
 
     const bytes = new Uint8Array(await file.arrayBuffer());

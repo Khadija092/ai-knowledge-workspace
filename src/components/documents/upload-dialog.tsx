@@ -8,6 +8,7 @@ import {
   formatFileSize,
   isPdfFile,
   MAX_UPLOAD_BYTES,
+  MAX_UPLOAD_LABEL,
 } from "@/features/documents";
 import { useWorkspace } from "@/features/workspace/workspace-provider";
 
@@ -50,10 +51,15 @@ export function UploadDialog({
         return { id: crypto.randomUUID(), file, error: "Only PDF files can be uploaded." };
       }
       if (file.size > MAX_UPLOAD_BYTES) {
-        return { id: crypto.randomUUID(), file, error: "This file is larger than 10 MB." };
+        return {
+          id: crypto.randomUUID(),
+          file,
+          error: `This file is larger than ${MAX_UPLOAD_LABEL}, the maximum supported for uploads.`,
+        };
       }
       return { id: crypto.randomUUID(), file };
     });
+    setUploadError(null);
     setFiles((current) => [...current, ...next]);
   }
 
@@ -140,7 +146,7 @@ export function UploadDialog({
             />
           </label>
           <p className="text-[13px] text-secondary">
-            Supported formats: PDF. Maximum file size: 10 MB.
+            Supported formats: PDF. Maximum file size: {MAX_UPLOAD_LABEL}.
           </p>
           {files.length > 0 ? (
             <div className="flex flex-col gap-2">
@@ -163,9 +169,10 @@ export function UploadDialog({
                     <button
                       type="button"
                       className="text-sm text-secondary hover:text-foreground"
-                      onClick={() =>
-                        setFiles((current) => current.filter((file) => file.id !== item.id))
-                      }
+                      onClick={() => {
+                        setFiles((current) => current.filter((file) => file.id !== item.id));
+                        setUploadError(null);
+                      }}
                       aria-label={`Remove ${item.file.name}`}
                     >
                       Remove

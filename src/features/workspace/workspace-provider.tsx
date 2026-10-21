@@ -63,12 +63,30 @@ type WorkspacePayload = {
 const WorkspaceContext = createContext<WorkspaceContextValue | null>(null);
 
 async function readPayload<T>(response: Response): Promise<T> {
-  const data = (await response.json().catch(() => null)) as
-    | (T & { error?: string })
-    | null;
-  if (!response.ok) {
-    throw new Error(data?.error || "Request failed.");
+  const raw = await response.text();
+  let data: (T & { error?: string }) | null = null;
+
+  try {
+    data = JSON.parse(raw) as T & { error?: string };
+  } catch {
+    // Vercel can reject an oversized upload before the route handler runs.
   }
+
+  if (!response.ok) {
+    const message =
+      data?.error ??
+      (response.status === 413
+        ? "Upload rejected: the file is larger than Vercel's request limit. Choose a PDF smaller than 4 MB."
+        : raw.trim()
+          ? `Request failed (${response.status}): ${raw.slice(0, 180)}`
+          : `Request failed (${response.status}).`);
+    throw new Error(message);
+  }
+
+  if (!data) {
+    throw new Error("The server returned an invalid response.");
+  }
+
   return data as T;
 }
 
