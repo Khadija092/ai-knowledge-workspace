@@ -2,19 +2,15 @@
 
 import {
   createContext,
+  useCallback,
   useContext,
   useEffect,
   useMemo,
   useRef,
   useState,
 } from "react";
-import { createAnswer } from "@/features/conversations/answer";
-import { mockConversations } from "@/features/conversations/mock";
-import { mockDocuments } from "@/features/documents/mock";
 import type { Conversation, Preferences, ResponseStyle } from "@/types/chat";
 import type { Document } from "@/types/document";
-
-const PREFERENCES_KEY = "knowledge-ai-preferences";
 
 const defaultPreferences: Preferences = {
   responseStyle: "detailed",
@@ -32,7 +28,6 @@ type SendMessageInput = {
   conversationId?: string;
   query: string;
   documentIds: string[];
-  documents: Document[];
   style: ResponseStyle;
 };
 
@@ -47,11 +42,11 @@ type WorkspaceContextValue = {
   dismissToast: (id: string) => void;
   notify: (message: string, tone?: Toast["tone"]) => void;
   reloadLibrary: () => void;
-  addUploadedFiles: (files: File[]) => void;
+  addUploadedFiles: (files: File[]) => Promise<void>;
   renameDocument: (id: string, title: string) => void;
   deleteDocument: (id: string) => void;
   retryDocument: (id: string) => void;
-  sendMessage: (input: SendMessageInput) => string;
+  sendMessage: (input: SendMessageInput) => Promise<string>;
   regenerateMessage: (conversationId: string, messageId: string) => void;
   renameConversation: (id: string, title: string) => void;
   deleteConversation: (id: string) => void;
@@ -59,39 +54,67 @@ type WorkspaceContextValue = {
   clearDocuments: () => void;
 };
 
+type WorkspacePayload = {
+  documents: Document[];
+  conversations: Conversation[];
+  preferences: Preferences;
+};
+
 const WorkspaceContext = createContext<WorkspaceContextValue | null>(null);
 
-function createId(prefix: string) {
-  return `${prefix}-${crypto.randomUUID()}`;
+async function readPayload<T>(response: Response): Promise<T> {
+  const data = (await response.json().catch(() => null)) as
+    | (T & { error?: string })
+    | null;
+  if (!response.ok) {
+    throw new Error(data?.error || "Request failed.");
+  }
+  return data as T;
 }
 
 export function WorkspaceProvider({ children }: { children: React.ReactNode }) {
-  const [documents, setDocuments] = useState<Document[]>(mockDocuments);
-  const [conversations, setConversations] =
-    useState<Conversation[]>(mockConversations);
+  const [documents, setDocuments] = useState<Document[]>([]);
+  const [conversations, setConversations] = useState<Conversation[]>([]);
   const [preferences, setPreferences] = useState<Preferences>(defaultPreferences);
-  const [loading, setLoading] = useState(false);
+  const [loading, setLoading] = useState(true);
   const [preferencesReady, setPreferencesReady] = useState(false);
   const [libraryError, setLibraryError] = useState<string | null>(null);
   const [toasts, setToasts] = useState<Toast[]>([]);
   const timers = useRef<number[]>([]);
 
+  const notify = useCallback((message: string, tone: Toast["tone"] = "success") => {
+    const id = crypto.randomUUID();
+    setToasts((current) => [...current, { id, message, tone }]);
+    const timer = window.setTimeout(() => {
+      setToasts((current) => current.filter((toast) => toast.id !== id));
+    }, 4200);
+    timers.current.push(timer);
+  }, []);
+
+  const loadWorkspace = useCallback(async () => {
+    try {
+      const response = await fetch("/api/workspace");
+      const data = await readPayload<WorkspacePayload>(response);
+      setDocuments(data.documents);
+      setConversations(data.conversations);
+      setPreferences(data.preferences);
+      setLibraryError(null);
+    } catch (error) {
+      setLibraryError(
+        error instanceof Error ? error.message : "Couldn't load your workspace.",
+      );
+    } finally {
+      setLoading(false);
+      setPreferencesReady(true);
+    }
+  }, []);
+
   useEffect(() => {
     const timer = window.setTimeout(() => {
-      try {
-        const stored = window.localStorage.getItem(PREFERENCES_KEY);
-        if (stored) {
-          const parsed = JSON.parse(stored) as Partial<Preferences>;
-          setPreferences({ ...defaultPreferences, ...parsed });
-        }
-        setPreferencesReady(true);
-      } catch {
-        setPreferencesReady(true);
-      }
-    }, 250);
-
+      void loadWorkspace();
+    }, 0);
     return () => window.clearTimeout(timer);
-  }, []);
+  }, [loadWorkspace]);
 
   useEffect(() => {
     const activeTimers = timers.current;
@@ -100,41 +123,8 @@ export function WorkspaceProvider({ children }: { children: React.ReactNode }) {
     };
   }, []);
 
-  function notify(message: string, tone: Toast["tone"] = "success") {
-    const id = createId("toast");
-    setToasts((current) => [...current, { id, message, tone }]);
-    const timer = window.setTimeout(() => {
-      setToasts((current) => current.filter((toast) => toast.id !== id));
-    }, 4200);
-    timers.current.push(timer);
-  }
-
   function dismissToast(id: string) {
     setToasts((current) => current.filter((toast) => toast.id !== id));
-  }
-
-  function scheduleReady(documentId: string) {
-    const timer = window.setTimeout(() => {
-      setDocuments((current) =>
-        current.map((document) =>
-          document.id === documentId
-            ? {
-                ...document,
-                status: "ready",
-                error: undefined,
-                pageCount: document.pageCount ?? 1,
-                passages: document.passages ?? [
-                  {
-                    page: 1,
-                    text: `This demo passage was prepared from ${document.filename} after processing finished.`,
-                  },
-                ],
-              }
-            : document,
-        ),
-      );
-    }, 1600);
-    timers.current.push(timer);
   }
 
   const value = useMemo<WorkspaceContextValue>(
@@ -151,51 +141,56 @@ export function WorkspaceProvider({ children }: { children: React.ReactNode }) {
       reloadLibrary() {
         setLibraryError(null);
         setLoading(true);
-        const timer = window.setTimeout(() => {
-          setDocuments(mockDocuments);
-          setConversations(mockConversations);
-          setLoading(false);
-          notify("Workspace restored.");
-        }, 400);
-        timers.current.push(timer);
+        void loadWorkspace();
       },
-      addUploadedFiles(files) {
-        const created = files.map((file) => {
-          const title = file.name.replace(/\.pdf$/i, "");
-          return {
-            id: createId("doc"),
-            title,
-            filename: file.name,
-            type: "PDF" as const,
-            sizeBytes: file.size,
-            uploadedAt: new Date().toISOString(),
-            status: "processing" as const,
-          };
+      async addUploadedFiles(files) {
+        const body = new FormData();
+        for (const file of files) {
+          body.append("files", file);
+        }
+        const response = await fetch("/api/documents", { method: "POST", body });
+        const data = await readPayload<{ documents: Document[] }>(response);
+        setDocuments((current) => {
+          const ids = new Set(data.documents.map((document) => document.id));
+          return [...data.documents, ...current.filter((document) => !ids.has(document.id))];
         });
-        setDocuments((current) => [...created, ...current]);
-        created.forEach((document) => scheduleReady(document.id));
-        notify(
-          "Your document was uploaded successfully. We're preparing it for AI-powered search.",
-        );
+        notify("Your document was saved to the library.");
       },
       renameDocument(id, title) {
-        const filename = title.toLowerCase().endsWith(".pdf") ? title : `${title}.pdf`;
-        setDocuments((current) =>
-          current.map((document) =>
-            document.id === id
-              ? {
-                  ...document,
-                  title: title.replace(/\.pdf$/i, ""),
-                  filename,
-                }
-              : document,
-          ),
-        );
-        notify("Document renamed.");
+        void (async () => {
+          try {
+            const response = await fetch(`/api/documents/${id}`, {
+              method: "PATCH",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify({ title }),
+            });
+            const data = await readPayload<{ document: Document }>(response);
+            setDocuments((current) =>
+              current.map((document) => (document.id === id ? data.document : document)),
+            );
+            notify("Document renamed.");
+          } catch (error) {
+            notify(
+              error instanceof Error ? error.message : "Couldn't rename that document.",
+              "error",
+            );
+          }
+        })();
       },
       deleteDocument(id) {
-        setDocuments((current) => current.filter((document) => document.id !== id));
-        notify("Document deleted.");
+        void (async () => {
+          try {
+            const response = await fetch(`/api/documents/${id}`, { method: "DELETE" });
+            await readPayload<{ ok: boolean }>(response);
+            setDocuments((current) => current.filter((document) => document.id !== id));
+            notify("Document deleted.");
+          } catch (error) {
+            notify(
+              error instanceof Error ? error.message : "Couldn't delete that document.",
+              "error",
+            );
+          }
+        })();
       },
       retryDocument(id) {
         setDocuments((current) =>
@@ -205,111 +200,117 @@ export function WorkspaceProvider({ children }: { children: React.ReactNode }) {
               : document,
           ),
         );
-        scheduleReady(id);
-        notify("Processing started again.");
+        void (async () => {
+          try {
+            const response = await fetch(`/api/documents/${id}/retry`, { method: "POST" });
+            const data = await readPayload<{ document: Document }>(response);
+            setDocuments((current) =>
+              current.map((document) => (document.id === id ? data.document : document)),
+            );
+            notify(
+              data.document.status === "ready"
+                ? "Processing finished."
+                : "Processing failed again.",
+              data.document.status === "ready" ? "success" : "error",
+            );
+          } catch (error) {
+            notify(
+              error instanceof Error ? error.message : "Couldn't process that document.",
+              "error",
+            );
+            void loadWorkspace();
+          }
+        })();
       },
-      sendMessage(input) {
-        const conversationId = input.conversationId ?? createId("conv");
+      async sendMessage(input) {
+        const query = input.query.trim();
+        let conversationId = input.conversationId;
+
+        if (!conversationId) {
+          const response = await fetch("/api/conversations", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+              title: query.slice(0, 48),
+              documentIds: input.documentIds,
+            }),
+          });
+          const data = await readPayload<{ conversation: Conversation }>(response);
+          conversationId = data.conversation.id;
+        }
+
+        const targetId = conversationId;
         const userMessage = {
-          id: createId("msg"),
+          id: crypto.randomUUID(),
           role: "user" as const,
           status: "complete" as const,
-          content: input.query.trim(),
+          content: query,
         };
-        const assistantId = createId("msg");
         const assistantMessage = {
-          id: assistantId,
+          id: crypto.randomUUID(),
           role: "assistant" as const,
           status: "streaming" as const,
           content: "",
         };
 
         setConversations((current) => {
-          const existing = current.find((item) => item.id === conversationId);
+          const existing = current.find((item) => item.id === targetId);
           const nextConversation: Conversation = existing
             ? {
                 ...existing,
                 updatedAt: new Date().toISOString(),
                 documentIds: input.documentIds,
-                title:
-                  existing.messages.length === 0
-                    ? userMessage.content.slice(0, 48)
-                    : existing.title,
+                title: existing.messages.length === 0 ? query.slice(0, 48) : existing.title,
                 messages: [...existing.messages, userMessage, assistantMessage],
               }
             : {
-                id: conversationId,
-                title: userMessage.content.slice(0, 48),
+                id: targetId,
+                title: query.slice(0, 48),
                 updatedAt: new Date().toISOString(),
                 documentIds: input.documentIds,
                 messages: [userMessage, assistantMessage],
               };
-
-          return [
-            nextConversation,
-            ...current.filter((item) => item.id !== conversationId),
-          ];
+          return [nextConversation, ...current.filter((item) => item.id !== targetId)];
         });
 
-        const timer = window.setTimeout(() => {
-          const answer =
-            input.documents.length === 0
-              ? null
-              : createAnswer(input.query, input.documents, input.style);
+        void (async () => {
+          try {
+            const response = await fetch(`/api/conversations/${targetId}/messages`, {
+              method: "POST",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify({
+                query,
+                documentIds: input.documentIds,
+                style: input.style,
+              }),
+            });
+            const data = await readPayload<{ conversation: Conversation }>(response);
+            setConversations((current) =>
+              current.map((item) => (item.id === targetId ? data.conversation : item)),
+            );
+          } catch (error) {
+            const message =
+              error instanceof Error ? error.message : "Couldn't prepare an answer.";
+            setConversations((current) =>
+              current.map((item) =>
+                item.id === targetId
+                  ? {
+                      ...item,
+                      messages: item.messages.map((entry) =>
+                        entry.id === assistantMessage.id
+                          ? { ...entry, status: "error", content: message }
+                          : entry,
+                      ),
+                    }
+                  : item,
+              ),
+            );
+          }
+        })();
 
-          setConversations((current) =>
-            current.map((conversation) => {
-              if (conversation.id !== conversationId) {
-                return conversation;
-              }
-
-              return {
-                ...conversation,
-                updatedAt: new Date().toISOString(),
-                messages: conversation.messages.map((message) =>
-                  message.id === assistantId
-                    ? answer
-                      ? {
-                          ...message,
-                          status: "complete",
-                          content: answer.content,
-                          citations: answer.citations,
-                        }
-                      : {
-                          ...message,
-                          status: "error",
-                          content:
-                            "Select a ready document before asking a question.",
-                        }
-                    : message,
-                ),
-              };
-            }),
-          );
-        }, 900);
-        timers.current.push(timer);
-        return conversationId;
+        return targetId;
       },
       regenerateMessage(conversationId, messageId) {
-        const conversation = conversations.find((item) => item.id === conversationId);
-        const messageIndex = conversation?.messages.findIndex(
-          (message) => message.id === messageId,
-        );
-        const previousUser = conversation?.messages
-          .slice(0, messageIndex)
-          .reverse()
-          .find((message) => message.role === "user");
-        const selected = documents.filter(
-          (document) =>
-            conversation?.documentIds.includes(document.id) &&
-            document.status === "ready",
-        );
-
-        if (!conversation || !previousUser || selected.length === 0) {
-          notify("Couldn't regenerate this answer.", "error");
-          return;
-        }
-
         setConversations((current) =>
           current.map((item) =>
             item.id === conversationId
@@ -324,61 +325,105 @@ export function WorkspaceProvider({ children }: { children: React.ReactNode }) {
               : item,
           ),
         );
-
-        const timer = window.setTimeout(() => {
-          const answer = createAnswer(
-            previousUser.content,
-            selected,
-            preferences.responseStyle,
-          );
-          setConversations((current) =>
-            current.map((item) =>
-              item.id === conversationId
-                ? {
-                    ...item,
-                    updatedAt: new Date().toISOString(),
-                    messages: item.messages.map((message) =>
-                      message.id === messageId
-                        ? {
-                            ...message,
-                            status: "complete",
-                            content: answer.content,
-                            citations: answer.citations,
-                          }
-                        : message,
-                    ),
-                  }
-                : item,
-            ),
-          );
-        }, 900);
-        timers.current.push(timer);
+        void (async () => {
+          try {
+            const response = await fetch(`/api/conversations/${conversationId}/messages`, {
+              method: "POST",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify({
+                regenerateMessageId: messageId,
+                style: preferences.responseStyle,
+              }),
+            });
+            const data = await readPayload<{ conversation: Conversation }>(response);
+            setConversations((current) =>
+              current.map((item) => (item.id === conversationId ? data.conversation : item)),
+            );
+          } catch (error) {
+            notify(
+              error instanceof Error ? error.message : "Couldn't regenerate this answer.",
+              "error",
+            );
+            void loadWorkspace();
+          }
+        })();
       },
       renameConversation(id, title) {
-        setConversations((current) =>
-          current.map((conversation) =>
-            conversation.id === id ? { ...conversation, title } : conversation,
-          ),
-        );
-        notify("Conversation renamed.");
+        void (async () => {
+          try {
+            const response = await fetch(`/api/conversations/${id}`, {
+              method: "PATCH",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify({ title }),
+            });
+            const data = await readPayload<{ conversation: Conversation }>(response);
+            setConversations((current) =>
+              current.map((conversation) =>
+                conversation.id === id ? data.conversation : conversation,
+              ),
+            );
+            notify("Conversation renamed.");
+          } catch (error) {
+            notify(
+              error instanceof Error ? error.message : "Couldn't rename that conversation.",
+              "error",
+            );
+          }
+        })();
       },
       deleteConversation(id) {
-        setConversations((current) =>
-          current.filter((conversation) => conversation.id !== id),
-        );
-        notify("Conversation deleted.");
+        void (async () => {
+          try {
+            const response = await fetch(`/api/conversations/${id}`, { method: "DELETE" });
+            await readPayload<{ ok: boolean }>(response);
+            setConversations((current) =>
+              current.filter((conversation) => conversation.id !== id),
+            );
+            notify("Conversation deleted.");
+          } catch (error) {
+            notify(
+              error instanceof Error ? error.message : "Couldn't delete that conversation.",
+              "error",
+            );
+          }
+        })();
       },
       async savePreferences(next) {
-        await new Promise((resolve) => window.setTimeout(resolve, 350));
-        window.localStorage.setItem(PREFERENCES_KEY, JSON.stringify(next));
-        setPreferences(next);
+        const response = await fetch("/api/preferences", {
+          method: "PUT",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(next),
+        });
+        const data = await readPayload<{ preferences: Preferences }>(response);
+        setPreferences(data.preferences);
       },
       clearDocuments() {
-        setDocuments([]);
-        notify("All documents were deleted.");
+        void (async () => {
+          try {
+            const response = await fetch("/api/documents", { method: "DELETE" });
+            await readPayload<{ documents: Document[] }>(response);
+            setDocuments([]);
+            notify("All documents were deleted.");
+          } catch (error) {
+            notify(
+              error instanceof Error ? error.message : "Couldn't delete the documents.",
+              "error",
+            );
+          }
+        })();
       },
     }),
-    [conversations, documents, libraryError, loading, preferences, preferencesReady, toasts],
+    [
+      conversations,
+      documents,
+      libraryError,
+      loadWorkspace,
+      loading,
+      notify,
+      preferences,
+      preferencesReady,
+      toasts,
+    ],
   );
 
   return (

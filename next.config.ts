@@ -6,6 +6,7 @@ const nextConfig: NextConfig = {
     agentFeedback: true,
   },
   cacheComponents: true,
+  serverExternalPackages: ["unpdf"],
   partialPrefetching: true,
   turbopack: {
     rules: {

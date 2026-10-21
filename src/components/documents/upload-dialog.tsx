@@ -29,6 +29,7 @@ export function UploadDialog({
   const [dragging, setDragging] = useState(false);
   const [phase, setPhase] = useState<"select" | "uploading" | "success">("select");
   const [progress, setProgress] = useState(0);
+  const [uploadError, setUploadError] = useState<string | null>(null);
 
   const validFiles = useMemo(
     () => files.filter((item) => !item.error).map((item) => item.file),
@@ -39,6 +40,7 @@ export function UploadDialog({
     setFiles([]);
     setPhase("select");
     setProgress(0);
+    setUploadError(null);
     onClose();
   }
 
@@ -55,27 +57,27 @@ export function UploadDialog({
     setFiles((current) => [...current, ...next]);
   }
 
-  function startUpload() {
+  async function startUpload() {
     if (validFiles.length === 0) {
       return;
     }
+    setUploadError(null);
     setPhase("uploading");
     setProgress(12);
     const timer = window.setInterval(() => {
-      setProgress((current) => {
-        if (current >= 100) {
-          window.clearInterval(timer);
-          return 100;
-        }
-        return Math.min(100, current + 22);
-      });
-    }, 180);
-    window.setTimeout(() => {
+      setProgress((current) => (current >= 90 ? 90 : current + 12));
+    }, 240);
+    try {
+      await addUploadedFiles(validFiles);
       window.clearInterval(timer);
       setProgress(100);
-      addUploadedFiles(validFiles);
       setPhase("success");
-    }, 900);
+    } catch (error) {
+      window.clearInterval(timer);
+      setProgress(0);
+      setPhase("select");
+      setUploadError(error instanceof Error ? error.message : "Upload failed.");
+    }
   }
 
   return (
@@ -89,8 +91,7 @@ export function UploadDialog({
       {phase === "success" ? (
         <div className="flex flex-col gap-5">
           <p className="rounded-xl border border-border bg-background px-4 py-4 text-sm text-secondary">
-            Your document was uploaded successfully. We&apos;re preparing it for
-            AI-powered search.
+            Your document was saved to the library.
           </p>
           <div className="flex justify-end">
             <Button onClick={resetAndClose}>Done</Button>
@@ -174,6 +175,7 @@ export function UploadDialog({
               </ul>
             </div>
           ) : null}
+          {uploadError ? <p className="text-sm text-destructive">{uploadError}</p> : null}
           {phase === "uploading" ? (
             <div>
               <div className="h-2 overflow-hidden rounded-full bg-background">

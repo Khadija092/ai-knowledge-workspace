@@ -92,21 +92,28 @@ export function ChatScreen({
     );
   }
 
-  function submit() {
+  async function submit() {
     const query = draft.trim();
     if (!query || streaming || documentsForAnswer.length === 0) {
       return;
     }
-    const conversationId = sendMessage({
-      conversationId: conversation?.id,
-      query,
-      documentIds: documentsForAnswer.map((document) => document.id),
-      documents: documentsForAnswer,
-      style: preferences.responseStyle,
-    });
     setDraft("");
-    if (id === "new") {
-      router.replace(`/chat/${conversationId}`);
+    try {
+      const conversationId = await sendMessage({
+        conversationId: conversation?.id,
+        query,
+        documentIds: documentsForAnswer.map((document) => document.id),
+        style: preferences.responseStyle,
+      });
+      if (id === "new") {
+        router.replace(`/chat/${conversationId}`);
+      }
+    } catch (error) {
+      setDraft(query);
+      notify(
+        error instanceof Error ? error.message : "Couldn't send that message.",
+        "error",
+      );
     }
   }
 

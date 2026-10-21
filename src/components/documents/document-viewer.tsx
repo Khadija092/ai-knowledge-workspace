@@ -111,33 +111,34 @@ export function DocumentViewer({
             </Button>
           </div>
           <div className="flex flex-1 items-start justify-center overflow-auto p-6 md:p-10">
-            <article
-              className="w-full max-w-3xl origin-top rounded-sm bg-white px-8 py-10 text-foreground shadow-sm"
+            <div
+              className="w-full max-w-3xl origin-top"
               style={{ transform: `scale(${scale})` }}
             >
-              <p className="text-xs font-medium tracking-wide text-muted uppercase">
-                {document.filename}
-              </p>
-              <h2 className="mt-6 text-2xl font-semibold">Page {currentPage}</h2>
+              <iframe
+                title={document.filename}
+                src={`/api/documents/${document.id}/file#page=${currentPage}`}
+                className="h-[70vh] w-full rounded-sm bg-white shadow-sm"
+              />
               {passage ? (
-                <div className="mt-6 max-w-xl">
+                <div className="mt-4 rounded-sm bg-white px-8 py-6 shadow-sm">
                   <p className="text-xs font-medium tracking-wide text-muted uppercase">
-                    Extracted passage
+                    Extracted passage · page {passage.page}
                   </p>
                   <p className="mt-3 text-base leading-7">
                     <mark className="bg-selected text-foreground">{passage.text}</mark>
                   </p>
                 </div>
               ) : (
-                <p className="mt-6 max-w-xl text-sm leading-6 text-secondary">
+                <p className="mt-4 text-sm leading-6 text-secondary">
                   {document.status === "processing"
-                    ? "This file is still being prepared. Page text will be available when processing finishes."
+                    ? "This file is still being prepared."
                     : document.status === "failed"
                       ? document.error
-                      : "No extracted passage is available for this page. Use the page controls to move through the document."}
+                      : "No extracted text is available for this page."}
                 </p>
               )}
-            </article>
+            </div>
           </div>
           <div className="flex items-center justify-center gap-3 border-t border-border bg-card px-4 py-3">
             <Button
