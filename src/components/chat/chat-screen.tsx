@@ -73,13 +73,11 @@ export function ChatScreen({
       : documents.filter((document) => document.status === "ready");
 
   const helper = useMemo(() => {
-    if (selectionRequired && selectedDocuments.length === 0) {
-      return "Select at least one ready document. Processing files can't be used yet.";
+    if (documentsForAnswer.length === 0) {
+      return "No document is attached. Dify will answer this message on its own.";
     }
     if (!selectionRequired && selectedDocuments.length === 0) {
-      return documentsForAnswer.length > 0
-        ? `No document is checked, so this question will use ${documentsForAnswer.length} ready documents.`
-        : "Upload a document and wait until it is ready.";
+      return `No document is checked, so this question will use ${documentsForAnswer.length} ready documents.`;
     }
     return `${selectedDocuments.length} document${selectedDocuments.length === 1 ? "" : "s"} selected.`;
   }, [documentsForAnswer.length, selectedDocuments.length, selectionRequired]);
@@ -94,7 +92,7 @@ export function ChatScreen({
 
   async function submit() {
     const query = draft.trim();
-    if (!query || streaming || documentsForAnswer.length === 0) {
+    if (!query || streaming) {
       return;
     }
     setDraft("");
@@ -219,7 +217,7 @@ export function ChatScreen({
             onChange={setDraft}
             onSubmit={submit}
             onAddDocuments={() => setDocumentsOpen(true)}
-            disabled={draft.trim().length === 0 || Boolean(streaming) || documentsForAnswer.length === 0}
+            disabled={draft.trim().length === 0 || Boolean(streaming)}
             helper={helper}
           />
         ) : null}

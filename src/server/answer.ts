@@ -20,6 +20,43 @@ function clip(text: string, max: number) {
   return `${compact.slice(0, max - 1).trim()}...`;
 }
 
+async function answerWithoutDocuments(
+  query: string,
+  difyConversationId?: string,
+): Promise<Answer> {
+  if (!process.env.DIFY_API_KEY) {
+    return {
+      status: "error",
+      content: "Attach a ready document, or connect Dify, before asking a question.",
+      citations: [],
+    };
+  }
+
+  try {
+    const result = await forwardChatToDify({
+      query,
+      conversationId: difyConversationId,
+      user: "workspace-user",
+    });
+    const content = result.answer.trim();
+    if (!content) {
+      throw new Error("Dify request failed.");
+    }
+    return {
+      status: "complete",
+      content,
+      citations: [],
+      difyConversationId: result.conversationId || difyConversationId,
+    };
+  } catch (error) {
+    return {
+      status: "error",
+      content: error instanceof Error ? error.message : "Dify request failed.",
+      citations: [],
+    };
+  }
+}
+
 function selectPassages(query: string, documents: Document[], limit: number) {
   const words = query
     .toLowerCase()
@@ -52,11 +89,7 @@ export async function answerQuestion(input: {
 }): Promise<Answer> {
   const ready = input.documents.filter((document) => document.status === "ready");
   if (ready.length === 0) {
-    return {
-      status: "error",
-      content: "Select a ready document before asking a question.",
-      citations: [],
-    };
+    return answerWithoutDocuments(input.query, input.difyConversationId);
   }
 
   const chosen = selectPassages(
@@ -90,17 +123,30 @@ export async function answerQuestion(input: {
   if (process.env.DIFY_API_KEY) {
     try {
       const result = await forwardChatToDify({
-        query: `Answer the question using only these excerpts from the user's documents. Cite them as [1], [2], and so on. If the excerpts do not contain the answer, say that.\n\n${context}\n\nQuestion: ${input.query}`,
+        query: [
+          "You are the assistant for a document workspace. Excerpts from the user's PDFs are included for reference.",
+          "If the question is about those documents, answer from the excerpts and cite only the ones you use, as [1], [2], and so on.",
+          "If the question is general, a greeting, or the user asks for an answer outside the PDF, answer from your own knowledge.",
+          "In that case do not cite the excerpts and do not say that the excerpts do not contain the answer.",
+          "",
+          context,
+          "",
+          `Question: ${input.query}`,
+        ].join("\n"),
         conversationId: input.difyConversationId,
         user: "workspace-user",
       });
-      if (!result.answer.trim()) {
+      const content = result.answer.trim();
+      if (!content) {
         throw new Error("Dify request failed.");
       }
+      const usedLabels = new Set(
+        [...content.matchAll(/\[(\d+)\]/g)].map((match) => match[1]),
+      );
       return {
         status: "complete",
-        content: result.answer.trim(),
-        citations,
+        content,
+        citations: citations.filter((citation) => usedLabels.has(citation.label)),
         difyConversationId: result.conversationId || input.difyConversationId,
       };
     } catch (error) {
